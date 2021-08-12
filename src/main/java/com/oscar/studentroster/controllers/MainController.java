@@ -1,13 +1,18 @@
 package com.oscar.studentroster.controllers;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.oscar.studentroster.models.Contact;
+import com.oscar.studentroster.models.Dorm;
 import com.oscar.studentroster.models.Student;
 import com.oscar.studentroster.services.ApiService;
 
@@ -63,5 +68,52 @@ public class MainController {
 		
 		apiService.createStudent(new Student(firstName, lastName, age));
 		return "redirect:/contact/new";
+	}
+	
+	@RequestMapping("/dorms/new")
+	public String newDorm(@ModelAttribute("dorm") Dorm dorm, BindingResult result) {
+		return "newDorm.jsp";
+	}
+	
+	@RequestMapping("/dorm/create")
+	public String createDorm(@ModelAttribute("dorm") Dorm dorm, BindingResult result) {
+		apiService.createDorm(dorm);
+		return "redirect:/dorms/" + dorm.getId();
+	}
+	
+	@RequestMapping("/dorms/create")
+	public String createDormAPI(@RequestParam(value="name", required=false) String name) {
+		Dorm dorm = new Dorm(name);
+		apiService.createDorm(dorm);
+		return "redirect:/dorms/" + dorm.getId();
+	}
+	
+	@RequestMapping("/dorms/{id}")
+	public String showDorm(@PathVariable("id") Long id, Model model) {
+		Dorm dorm = apiService.getDormById(id);
+		List<Student> students = apiService.getAllStudents();
+		model.addAttribute("dorm", dorm);
+		model.addAttribute("students", students);
+		return "showDorm.jsp";
+	}
+	
+	@RequestMapping("/dorms/{id}/add")
+	public String addToDormAPI(@PathVariable("id") Long id, @RequestParam(value="student", required=false) Long studentID) {
+		Dorm dorm = apiService.getDormById(id);
+		apiService.addStudentByIdToDorm(studentID, dorm);
+		return "redirect:/dorms/" + id;
+	}
+	
+	@RequestMapping(value="/dorm/{id}/add", method=RequestMethod.POST)
+	public String addToDorm(@PathVariable("id") Long id, @RequestParam("student") Long studentID) {
+		Dorm dorm = apiService.getDormById(id);
+		apiService.addStudentByIdToDorm(studentID, dorm);
+		return "redirect:/dorms/" + id;
+	}
+	
+	@RequestMapping("/dorms/{id}/remove")
+	public String removeStudentFromDorm(@PathVariable("id") Long dormID, @RequestParam("student") Long studentID) {
+		apiService.removeStudentByIdFromDorm(studentID);
+		return "redirect:/dorms/" + dormID;
 	}
 }
