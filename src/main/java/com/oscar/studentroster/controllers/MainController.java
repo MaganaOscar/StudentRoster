@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.oscar.studentroster.models.Classes;
 import com.oscar.studentroster.models.Contact;
 import com.oscar.studentroster.models.Dorm;
 import com.oscar.studentroster.models.Student;
@@ -115,5 +116,54 @@ public class MainController {
 	public String removeStudentFromDorm(@PathVariable("id") Long dormID, @RequestParam("student") Long studentID) {
 		apiService.removeStudentByIdFromDorm(studentID);
 		return "redirect:/dorms/" + dormID;
+	}
+	
+	@RequestMapping("/classes/new")
+	public String newClass(@ModelAttribute("class") Classes classes, BindingResult result) {
+		return "newClass.jsp";
+	}
+	
+	@RequestMapping(value="/class/create", method=RequestMethod.POST)
+	public String createClass(@ModelAttribute("class") Classes classes, BindingResult result) {
+		apiService.createClass(classes);
+		return "redirect:/classes/new";
+	}
+	
+	@RequestMapping("/classes/create")
+	public String createClassAPI(@RequestParam(value="name", required=false) String name) {
+		apiService.createClass(new Classes(name));
+		return "redirect:/classes/new";
+	}
+	
+	@RequestMapping("/students/{id}")
+	public String showSchedule(@PathVariable("id") Long id, Model model) {
+		Student student = apiService.getStudentById(id);
+		List<Classes> classes = apiService.findClassesNotContainingStudent(student);
+		model.addAttribute("classes", classes);
+		model.addAttribute("student", student);
+		return "showSchedule.jsp";
+	}
+	
+	@RequestMapping(value="/students/add", method=RequestMethod.POST)
+	public String addClassToStudent(@RequestParam("student") Long studentID, @RequestParam("class") Long classID) {
+		Student student = apiService.getStudentById(studentID);
+		Classes classes = apiService.getClass(classID);
+		apiService.addClassToStudent(student, classes);
+		return "redirect:/students/" + studentID;
+	}
+	
+	@RequestMapping("/students/{id}/add")
+	public String addClassToStudentAPI(@PathVariable("id") Long studentID,@RequestParam(value="class", required=false) Long classID) {
+		Student student = apiService.getStudentById(studentID);
+		Classes classes = apiService.getClass(classID);
+		apiService.addClassToStudent(student, classes);
+		return "redirect:/students/" + studentID;
+	}
+	
+	@RequestMapping("/classes/{id}")
+	public String showClass(@PathVariable("id") Long id, Model model) {
+		Classes classes = apiService.getClass(id);
+		model.addAttribute("classes", classes);
+		return "showClass.jsp";
 	}
 }

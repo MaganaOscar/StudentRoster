@@ -5,9 +5,11 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.oscar.studentroster.models.Classes;
 import com.oscar.studentroster.models.Contact;
 import com.oscar.studentroster.models.Dorm;
 import com.oscar.studentroster.models.Student;
+import com.oscar.studentroster.repositories.ClassesRepository;
 import com.oscar.studentroster.repositories.ContactRepository;
 import com.oscar.studentroster.repositories.DormRepository;
 import com.oscar.studentroster.repositories.StudentRepository;
@@ -17,11 +19,14 @@ public class ApiService {
 	private final ContactRepository conRepo;
 	private final StudentRepository stuRepo;
 	private final DormRepository dormRepo;
+	private final ClassesRepository clsRepo;
 	
-	public ApiService(ContactRepository conRepo, StudentRepository stuRepo, DormRepository dormRepo) {
+	public ApiService(ContactRepository conRepo, StudentRepository stuRepo, 
+			DormRepository dormRepo, ClassesRepository clsRepo) {
 		this.conRepo = conRepo;
 		this.stuRepo = stuRepo;
 		this.dormRepo = dormRepo;
+		this.clsRepo = clsRepo;
 	}
 	
 	public List<Student> getAllStudents() {
@@ -74,4 +79,27 @@ public class ApiService {
 		editStu.setDorm(null);
 		return stuRepo.save(editStu);
 	}
+	
+	public Classes createClass(Classes classes) {
+		return clsRepo.save(classes);
+	}
+	
+	public Classes getClass(Long id) {
+		Optional<Classes> optionalClass = clsRepo.findById(id);
+		if(optionalClass.isPresent()) {
+			return optionalClass.get();
+		} else {
+			return null;
+		}
+	}
+	
+	public List<Classes> findClassesNotContainingStudent(Student student) {
+		return clsRepo.findByStudentsNotContains(student);
+	}
+	
+	public Student addClassToStudent(Student student, Classes classes) {
+		student.getClasses().add(classes);
+		return stuRepo.save(student);
+	}
+	
 }

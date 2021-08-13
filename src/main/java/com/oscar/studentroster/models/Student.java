@@ -1,6 +1,7 @@
 package com.oscar.studentroster.models;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -10,6 +11,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
@@ -37,6 +40,13 @@ public class Student {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="dorm_id")
 	private Dorm dorm;
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(
+			name = "classes_students",
+			joinColumns = @JoinColumn(name="student_id"),
+			inverseJoinColumns = @JoinColumn(name="class_id")
+	)
+	private List<Classes> classes;
 	
 	
 	public Student() {
@@ -119,6 +129,14 @@ public class Student {
 
 	public Date getCreatedAt() {
 		return createdAt;
+	}
+
+	public List<Classes> getClasses() {
+		return classes;
+	}
+
+	public void setClasses(List<Classes> classes) {
+		this.classes = classes;
 	}
 	
 	
